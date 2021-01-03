@@ -1,17 +1,18 @@
 import requests
+
+import config
 from entities.part import Part
 from entities.part_category import PartCategory
 from json_utils import get_json_value
 from requests import HTTPError
 from typing import List
 
-BASE_URL = 'https://rebrickable.com/'
-_token = ''
+_BASE_URL = 'https://rebrickable.com/'
 
 
 def _get_request(endpoint: str) -> (object, str):
     try:
-        r = requests.get(BASE_URL + endpoint, headers={'Authorization': f'key {_token}'})
+        r = requests.get(_BASE_URL + endpoint, headers={'Authorization': f'key {config.TOKEN}'})
     except HTTPError as http_err:
         return None, f'HTTP error occurred: {http_err}'
     except Exception as err:
@@ -25,11 +26,6 @@ def _get_request(endpoint: str) -> (object, str):
             return None, f'Failed to receive data: HTTP status code is {r.status_code}'
 
     return r.json(), None
-
-
-def set_token(token: str):
-    global _token
-    _token = token
 
 
 def get_part_categories() -> (List[PartCategory], str):
