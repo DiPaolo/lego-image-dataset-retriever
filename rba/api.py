@@ -43,8 +43,9 @@ def get_part_categories() -> (List[PartCategory], str):
     return part_categories, err_msg
 
 
-def get_part_count() -> (int, str):
-    json, err_msg = _get_request(f'/api/v3/lego/parts/?page=1&page_size=1')
+def get_part_count(part_cat_id: int = None) -> (int, str):
+    json, err_msg = _get_request(f'/api/v3/lego/parts/?page=1&page_size=1' +
+                                 (f'&part_cat_id={part_cat_id}' if part_cat_id else ''))
     if json is None:
         return json, err_msg
 
@@ -54,8 +55,9 @@ def get_part_count() -> (int, str):
     return json['count'], None
 
 
-def get_parts(page: int = 1, page_size: int = 100) -> (List[Part], str):
-    json, err_msg = _get_request(f'/api/v3/lego/parts/?page={page}&page_size={page_size}')
+def get_parts(page: int = 1, page_size: int = 100, part_cat_id: int = None) -> (List[Part], str):
+    json, err_msg = _get_request(f'/api/v3/lego/parts/?page={page}&page_size={page_size}' +
+                                 (f'&part_cat_id={part_cat_id}' if part_cat_id else ''))
     if json is None:
         return json, err_msg
 
