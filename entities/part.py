@@ -11,8 +11,8 @@ class Part(object):
     def __init__(self, json_object):
         self.__json = json_object
 
-    def id(self):
-        return get_json_value(self.__json, 'id')
+    def part_num(self):
+        return get_json_value(self.__json, 'part_num')
 
     def name(self):
         return get_json_value(self.__json, 'name')
