@@ -4,9 +4,8 @@
 import argparse
 import commands.part
 import commands.part_category
-
 import config
-
+import tqdm
 
 if __name__ == '__main__':
     config.init_config()
@@ -31,6 +30,14 @@ if __name__ == '__main__':
     elif 'print_parts' in args and args.print_parts:
         commands.part.print_parts(print_cat_id)
     elif 'download_parts_images' in args and args.download_parts_images:
-        commands.part.download_parts_images(print_cat_id, out_dir)
+        def update_progress_bar(cur_value: int, total: int):
+            if not hasattr(update_progress_bar, 'pb'):
+                update_progress_bar.pb = tqdm.tqdm(total=total, desc='Downloading images', unit='img')
+                update_progress_bar.last_num = 0
+
+            update_progress_bar.pb.update(cur_value - update_progress_bar.last_num)
+            update_progress_bar.last_num = cur_value
+
+        commands.part.download_parts_images(print_cat_id, out_dir, lambda cur, total: update_progress_bar(cur, total))
     else:
         parser.print_help()

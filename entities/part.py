@@ -17,5 +17,11 @@ class Part(object):
     def name(self):
         return get_json_value(self.__json, 'name')
 
+    def part_cat_id(self):
+        return get_json_value(self.__json, 'part_cat_id')
+
+    def part_url(self):
+        return get_json_value(self.__json, 'part_url')
+
     def image_url(self):
         return get_json_value(self.__json, 'part_img_url')

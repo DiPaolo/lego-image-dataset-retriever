@@ -9,9 +9,9 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 
-def _iterate_parts(callback, print_cat_id: int = None):
+def _iterate_parts(callback, print_cat_id: int = None, progress_callback = None):
     page_size = config.REST_API_PAGE_SIZE
-    cur_page = 1
+    cur_page = 0
     part_count, err_msg = rba.api.get_part_count(print_cat_id)
     if err_msg:
         print(f'ERROR Failed to get total part count. {err_msg}')
@@ -24,20 +24,28 @@ def _iterate_parts(callback, print_cat_id: int = None):
     else:
         last_page = part_count // page_size + 1
 
-    while cur_page <= last_page:
-        parts, err_msg = rba.api.get_parts(cur_page, page_size, print_cat_id)
+    downloaded_image_count = 0
+    while cur_page < last_page:
+        parts, err_msg = rba.api.get_parts(cur_page + 1, page_size, print_cat_id)
         if parts is None:
             print(f'ERROR Failed to get list of parts. {err_msg}')
             return
 
         for part in parts:
             callback(part)
+            downloaded_image_count += 1
+            if progress_callback:
+                progress_callback(downloaded_image_count, part_count)
 
         cur_page += 1
 
+    progress_callback(cur_page * page_size, part_count)
 
-def print_parts(print_cat_id: int = None):
-    _iterate_parts(print_cat_id=print_cat_id, callback=lambda part: print(f"  {part.part_num()}: {part.name()} ({part.image_url()})"))
+
+def print_parts(print_cat_id: int = None, progress_callback = None):
+    _iterate_parts(print_cat_id=print_cat_id,
+                   callback=lambda part: print(f"  {part.part_num()}: {part.name()} ({part.image_url()})"),
+                   progress_callback=progress_callback)
 
 
 def print_part(part_id: int):
@@ -49,9 +57,10 @@ def print_part(part_id: int):
     print(f"{part_id}: {part.name()} ({part.image_url()})")
 
 
-def download_parts_images(print_cat_id: int = None, out_dir: str = os.path.curdir):
+def download_parts_images(print_cat_id: int = None, out_dir: str = os.path.curdir, progress_callback = None):
     Path(out_dir).mkdir(parents=True, exist_ok=True)
-    _iterate_parts(print_cat_id=print_cat_id, callback=lambda part: _download_part(part, out_dir))
+    _iterate_parts(print_cat_id=print_cat_id, callback=lambda part: _download_part(part, out_dir),
+                   progress_callback=progress_callback)
 
 
 def _download_part(part: Part, out_dir: str = os.path.curdir):
