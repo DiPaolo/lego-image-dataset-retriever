@@ -5,10 +5,13 @@ import argparse
 import commands.part
 import commands.part_category
 import config
+import db
 import tqdm
 
 if __name__ == '__main__':
     config.init_config()
+
+    db.init()
 
     parser = argparse.ArgumentParser(description='LEGO')
     parser.add_argument('--print-part-categories', action=argparse.BooleanOptionalAction, help='print all part categories')
