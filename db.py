@@ -2,6 +2,8 @@ import sqlite3
 from typing import List
 
 from entities.part import Part
+from entities.part_category import PartCategory
+from entities.part_image import PartImage
 
 
 def _create_connection():
@@ -29,22 +31,32 @@ def _create_table(conn, table_name, columns: List[str]):
 def init():
     conn = _create_connection()
 
+    # parts categories
+    _create_table(conn, 'part_categories', [
+        'id integer PRIMARY KEY',
+        'name text NOT NULL',
+        'rba_part_cat_id text',
+        'part_count integer'
+    ])
+
     # parts
     _create_table(conn, 'parts', [
         'id integer PRIMARY KEY',
         'name text NOT NULL',
-        'part_num text NOT NULL',
-        'part_cat_id text',
-        'part_url text NOT NULL',
-        'width integer',
-        'height integer'
+        'rba_part_num text NOT NULL',
+        'rba_part_cat_id text',
+        'rba_part_url text NOT NULL',
+        'FOREIGN KEY(rba_part_cat_id) REFERENCES part_categories(id)'
     ])
 
     # parts images
-    _create_table(conn, 'parts_images', [
+    _create_table(conn, 'part_images', [
         'id integer PRIMARY KEY',
         'part_id integer NOT NULL',
-        'part_img_url text NOT NULL',
+        'width integer',
+        'height integer',
+        'rba_part_img_url text NOT NULL',
+        'downloaded_filename text',
         'is_downloaded BIT NOT NULL',
         'FOREIGN KEY(part_id) REFERENCES parts(id)'
     ])
@@ -52,18 +64,54 @@ def init():
     _close_connection(conn)
 
 
-def add_parts(parts: List[Part]):
+def add_part_categories(part_categories: List[PartCategory]):
     conn = _create_connection()
     cur = conn.cursor()
 
-    for part in parts:
-        sql = f'''INSERT INTO parts(name, part_num, part_cat_id, part_url)
-                  VALUES({part.name()}, {part.part_num()}, {part.part_cat_id()}, {part.part_url()})'''
+    for part_cat in part_categories:
+        sql = f'''INSERT INTO part_categories(name, rba_part_cat_id, part_count)
+                  VALUES({part_cat.name()}, {part_cat.id()}, {part_cat.part_count()})'''
         try:
-            cur.execute(sql, conn)
+            cur.execute(sql, cur)
         except sqlite3.Error as e:
-            print(f'ERROR Failed to add part {part.name()} ({part.part_num()}) to database. {e}')
+            print(f'ERROR Failed to add part category {part_cat.name()} ({part_cat.id()}) to database. {e}')
 
+    conn.commit()
+    _close_connection(conn)
+
+    return cur.lastrowid
+
+
+def add_part(part: Part):
+    conn = _create_connection()
+    cur = conn.cursor()
+
+    sql = f'''INSERT INTO parts(name, rba_part_num, rba_part_cat_id, rba_part_url)
+              VALUES(?, ?, ?, ?)'''
+
+    try:
+        cur.execute(sql, [part.name(), part.part_num(), part.part_cat_id(), part.part_url()])
+    except sqlite3.Error as e:
+        print(f'ERROR Failed to add part {part.name()} ({part.part_num()}) to database. {e}')
+
+    conn.commit()
+    _close_connection(conn)
+
+    return cur.lastrowid
+
+
+def add_part_image(part_id: int, part_image: PartImage):
+    conn = _create_connection()
+    cur = conn.cursor()
+
+    sql = f'''INSERT INTO part_images(part_id, width, height, rba_part_img_url, downloaded_filename, is_downloaded)
+              VALUES(?, ?, ?, ?, ?, ?)'''
+    try:
+        cur.execute(sql, [part_id, part_image.width(), part_image.height(), part_image.image_url(),
+                          part_image.downloaded_filename(), part_image.is_downloaded()])
+    except sqlite3.Error as e:
+        print(
+            f'ERROR Failed to add image for part with ID {part_id} (image URL {part_image.image_url()}) to database. {e}')
 
     conn.commit()
     _close_connection(conn)

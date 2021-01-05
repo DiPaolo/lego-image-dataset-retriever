@@ -5,3 +5,4 @@ requests==2.25.1
 urllib3==1.26.2
 pysqlite3
 tqdm~=4.55.1
+Pillow~=8.1.0
