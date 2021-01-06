@@ -18,6 +18,8 @@ if __name__ == '__main__':
     parser.add_argument('--print-part', metavar='ID', type=str, help='print part info with specified ID')
     parser.add_argument('--print-parts', action=argparse.BooleanOptionalAction, help='print information for specified parts')
     parser.add_argument('--download-parts-images', action=argparse.BooleanOptionalAction, help='download images of specified parts')
+    parser.add_argument('--print-parts-stats', action=argparse.BooleanOptionalAction, help='print statistics for specified parts')
+    parser.add_argument('--label-templates', metavar='label-template', type=str,  nargs='*', help="list of label templates (used for --print-parts-stats). Example: --label-templates: 'Plates * x *' 'Plates * x * x *'")
     parser.add_argument('--part-category-id', metavar='ID', type=int, help='specify part category ID')
     parser.add_argument('--output-dir', metavar='dir', type=str, help='directory where the output will be stored to')
 
@@ -42,5 +44,7 @@ if __name__ == '__main__':
             update_progress_bar.last_num = cur_value
 
         commands.part.download_parts_images(print_cat_id, out_dir, lambda cur, total: update_progress_bar(cur, total))
+    elif 'print_parts_stats' in args and args.print_parts_stats:
+        commands.part.print_parts_stats(print_cat_id)
     else:
         parser.print_help()

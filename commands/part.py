@@ -72,3 +72,12 @@ def _download_part_image(part: Part, out_dir: str = os.path.curdir):
     if part_img:
         part_img.download(out_dir)
         db.add_part_image(new_part_id, part_img)
+
+
+def print_parts_stats(print_cat_id: int = None):
+    res_stats = db.fetch_resolutions(print_cat_id)
+
+    total_img_count = sum(res_stats.values())
+
+    for res in sorted(res_stats.items(), key=lambda item: item[1], reverse=True):
+        print(f'{res[0][0]}x{res[0][1]} - {res[1]} ({res[1] / total_img_count * 100.0:.1f}%)')

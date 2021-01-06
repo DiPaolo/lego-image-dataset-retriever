@@ -117,3 +117,27 @@ def add_part_image(part_id: int, part_image: PartImage):
     _close_connection(conn)
 
     return cur.lastrowid
+
+
+def fetch_resolutions(part_cat_id: int):
+    conn = _create_connection()
+    cur = conn.cursor()
+
+    sql = f'''
+        SELECT width, height
+        FROM part_images
+        INNER JOIN parts
+        ON part_images.part_id = parts.id
+        WHERE parts.rba_part_cat_id == {part_cat_id}'''
+
+    res_stats = dict()
+    for res in cur.execute(sql):
+        key = (res[0], res[1])
+        if key in res_stats:
+            res_stats[key] += 1
+        else:
+            res_stats[key] = 1
+
+    _close_connection(conn)
+
+    return res_stats
