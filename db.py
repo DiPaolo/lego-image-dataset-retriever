@@ -147,10 +147,12 @@ def fetch_categories():
     cur = conn.cursor()
 
     sql = f'''
-        SELECT parts.rba_part_cat_id, COUNT(parts.rba_part_cat_id)
+        SELECT parts.rba_part_cat_id, part_categories.name, COUNT(parts.rba_part_cat_id)
         FROM part_images
         INNER JOIN parts
-        ON part_images.part_id = parts.id
+            ON part_images.part_id = parts.id
+        INNER JOIN part_categories
+            ON parts.rba_part_cat_id == part_categories.rba_part_cat_id
         GROUP BY parts.rba_part_cat_id
         ORDER BY COUNT(parts.rba_part_cat_id) DESC'''
 
@@ -158,9 +160,12 @@ def fetch_categories():
     for res in cur.execute(sql):
         key = res[0]
         if key in res_stats:
-            res_stats[key] += res[1]
+            res_stats[key]['count'] += res[2]
         else:
-            res_stats[key] = res[1]
+            res_stats[key] = {
+                'name': res[1],
+                'count': res[2]
+            }
 
     _close_connection(conn)
 
