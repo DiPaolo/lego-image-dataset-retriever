@@ -17,5 +17,5 @@ class PartCategory(object):
     def name(self):
         return get_json_value(self.__json, 'name')
 
-    def part_count(self):
+    def rba_part_count(self):
         return get_json_value(self.__json, 'part_count')

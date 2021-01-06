@@ -36,7 +36,7 @@ def init():
         'id integer PRIMARY KEY',
         'name text NOT NULL',
         'rba_part_cat_id text',
-        'part_count integer'
+        'rba_part_count integer'
     ])
 
     # parts
@@ -64,17 +64,16 @@ def init():
     _close_connection(conn)
 
 
-def add_part_categories(part_categories: List[PartCategory]):
+def add_part_category(part_category: PartCategory):
     conn = _create_connection()
     cur = conn.cursor()
 
-    for part_cat in part_categories:
-        sql = f'''INSERT INTO part_categories(name, rba_part_cat_id, part_count)
-                  VALUES({part_cat.name()}, {part_cat.id()}, {part_cat.part_count()})'''
-        try:
-            cur.execute(sql, cur)
-        except sqlite3.Error as e:
-            print(f'ERROR Failed to add part category {part_cat.name()} ({part_cat.id()}) to database. {e}')
+    sql = f'''INSERT INTO part_categories(name, rba_part_cat_id, rba_part_count)
+              VALUES(?, ?, ?)'''
+    try:
+        cur.execute(sql, [part_category.name(), part_category.id(), part_category.rba_part_count()])
+    except sqlite3.Error as e:
+        print(f'ERROR Failed to add part category {part_category.name()} ({part_category.id()}) to database. {e}')
 
     conn.commit()
     _close_connection(conn)
