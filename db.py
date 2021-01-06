@@ -141,3 +141,28 @@ def fetch_resolutions(part_cat_id: int):
     _close_connection(conn)
 
     return res_stats
+
+
+def fetch_categories():
+    conn = _create_connection()
+    cur = conn.cursor()
+
+    sql = f'''
+        SELECT parts.rba_part_cat_id, COUNT(parts.rba_part_cat_id)
+        FROM part_images
+        INNER JOIN parts
+        ON part_images.part_id = parts.id
+        GROUP BY parts.rba_part_cat_id
+        ORDER BY COUNT(parts.rba_part_cat_id) DESC'''
+
+    res_stats = dict()
+    for res in cur.execute(sql):
+        key = res[0]
+        if key in res_stats:
+            res_stats[key] += res[1]
+        else:
+            res_stats[key] = res[1]
+
+    _close_connection(conn)
+
+    return res_stats
