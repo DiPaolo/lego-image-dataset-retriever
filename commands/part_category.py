@@ -9,7 +9,8 @@ def print_all():
         return
 
     for part_category in part_categories:
-        print(f'  {part_category.id()}: {part_category.name()} ({part_category.part_count()})')
+        db.add_part_category(part_category)
+        print(f'  {part_category.id()}: {part_category.name()} ({part_category.rba_part_count()})')
 
 
 def print_part_cats_stats():
